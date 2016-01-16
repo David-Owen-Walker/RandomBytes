@@ -4,6 +4,35 @@
 '''
 # Imports the base class for AI player
 from ZDengine import ZDPlayer
+def unique_increment(indices, max_value):
+    '''
+    Like increment, but will keep incrementing until no two indices
+    are identical. Note - if dice_required is greater than len(cup)
+    this will loop forever (or just generally not work)
+    '''
+    if increment(indices, max_value):
+        return True
+        while len(set(indices))<len(indices):
+            if increment(indices, max_value):
+                return True
+                def increment(indices, max_value):
+                    '''
+                    Increases the indices array to the next value, rolling over increases
+                    in a given index to the previous index if it exceeds the highest allowed
+                    index, resulting in a "counting" effect
+                    '''
+                    incrementing = len(indices)-1
+                    while incrementing!=-1:
+                        indices[incrementing]+=1
+                        if indices[incrementing] == max_value:
+                            indices[incrementing] = 0
+                            incrementing -= 1
+                        else:
+                            break
+                            if incrementing==-1:
+                                return True
+                            else:
+                                return False
 
 
 '''
@@ -12,6 +41,7 @@ from ZDengine import ZDPlayer
 
     Name both your file with the pattern: zd_yourname_ainame.py (file name), zd_yourname_ainame (Class name)
 '''
+dice = {'G':list('BBBFFS'), 'Y':list('BBFFSS'),'R':list('BFFSSS')}
 class zd_davidwalker_walker(ZDPlayer):
     # must begin with zd_
     name = 'zd_walker'
@@ -51,13 +81,45 @@ class zd_davidwalker_walker(ZDPlayer):
         # print "I have "+ str(hand) + " in my hand"
         # print "the cup is "+str(cup)
         try:
+            possibilities=hands(hand, cup)
             print "I have "+str(n_brain)+" brains and "+str(n_shotgun)+" blasts"
-            print "I could have: "+str(len(hands(hand, cup)))+"different hands"
+            print "I could have: "+str(len(possibilities))+" different hands"
+            # print "hand: "+str(hand)
+            # print "cup: "+str(cup)
+            # print "possibilities: "+str(possibilities)
+
             return True
         except Exception as e:
             print str(e)
             input()
             return False
+
+
+def score_roll(hand,indices, n_shotgun):
+    roll = ""
+    for index in range(len(indices)):
+        roll = roll + dice[hand[index]]
+    if
+
+def outcomes(possibile_hands, n_shotgun):
+    '''
+    Lists the possible outcomes of rolling, by bin
+    '''
+    scores = [0]*(2+len(possibile_hands[0])) # a roll could score from 0 to len(hand) (usually 3), or bust
+                                             # scores are stored in their indices. Bust is the highest index.
+    for hand in possibile_hands:
+        finished = False
+        index = [0]*len(hand)
+        while not finished:
+            for index in indices:
+                result = score_roll(hand, indices,n_shotgun)
+                if result == -1:
+                    scores[len(scores)-1]+=1
+                else:
+                    scores[result]+=1
+            finished = increment(indices, 6)
+
+
 def hands(hand, cup):
     '''
     Returns a list of hands which might occur after drawing from the cup
@@ -80,33 +142,3 @@ def hands(hand, cup):
         possible_hands.append(drawn_dice +hand)
         finished = unique_increment(indices, len(cup))
     return possible_hands
-def unique_increment(indices, max_value):
-    '''
-    Like increment, but will keep incrementing until no two indices
-    are identical. Note - if dice_required is greater than len(cup)
-    this will loop forever (or just generally not work)
-    '''
-    if increment(indices, max_value):
-        return True
-    while len(set(indices))<len(indices):
-        if increment(indices, max_value):
-            return True
-def increment(indices, max_value):
-    '''
-        Increases the indices array to the next value, rolling over increases
-        in a given index to the previous index if it exceeds the highest allowed
-        index, resulting in a "counting" effect
-    '''
-    incrementing = len(indices)-1
-    while incrementing!=-1:
-        indices[incrementing]+=1
-        if indices[incrementing] == max_value:
-            indices[incrementing] = 0
-            incrementing -= 1
-        else:
-            break
-    if incrementing==-1:
-        print "hey"
-        return True
-    else:
-        return False
