@@ -4,6 +4,25 @@
 '''
 # Imports the base class for AI player
 from ZDengine import ZDPlayer
+def increment(indices, max_value):
+    '''
+    Increases the indices array to the next value, rolling over increases
+    in a given index to the previous index if it exceeds the highest allowed
+    index, resulting in a "counting" effect
+    '''
+    # print str(indices)
+    incrementing = len(indices)-1
+    while incrementing!=-1:
+        indices[incrementing]+=1
+        if indices[incrementing] == max_value:
+            indices[incrementing] = 0
+            incrementing -= 1
+        else:
+            break
+    if incrementing==-1:
+        return True
+    else:
+        return False
 def unique_increment(indices, max_value):
     '''
     Like increment, but will keep incrementing until no two indices
@@ -15,24 +34,6 @@ def unique_increment(indices, max_value):
         while len(set(indices))<len(indices):
             if increment(indices, max_value):
                 return True
-                def increment(indices, max_value):
-                    '''
-                    Increases the indices array to the next value, rolling over increases
-                    in a given index to the previous index if it exceeds the highest allowed
-                    index, resulting in a "counting" effect
-                    '''
-                    incrementing = len(indices)-1
-                    while incrementing!=-1:
-                        indices[incrementing]+=1
-                        if indices[incrementing] == max_value:
-                            indices[incrementing] = 0
-                            incrementing -= 1
-                        else:
-                            break
-                            if incrementing==-1:
-                                return True
-                            else:
-                                return False
 
 
 '''
@@ -82,42 +83,56 @@ class zd_davidwalker_walker(ZDPlayer):
         # print "the cup is "+str(cup)
         try:
             possibilities=hands(hand, cup)
+            scores = outcomes(possibilities,n_shotgun)
+            expected_value = evaluate_scores(scores, n_brain)
             print "I have "+str(n_brain)+" brains and "+str(n_shotgun)+" blasts"
-            print "I could have: "+str(len(possibilities))+" different hands"
-            # print "hand: "+str(hand)
-            # print "cup: "+str(cup)
-            # print "possibilities: "+str(possibilities)
-
-            return True
+            if expected_value>0:
+                print "I choose to roll"
+                return True
+            else:
+                print "I choose to not roll and cash in my " + str(n_brain) + " points"
+                return False
         except Exception as e:
             print str(e)
             input()
             return False
 
-
+def evaluate_scores(scores, n_brains):
+    for index in range(len(scores)-1):
+        scores[index]*=index
+    scores[len(scores)-1]*=(-n_brains)
+    return sum(scores)
 def score_roll(hand,indices, n_shotgun):
     roll = ""
     for index in range(len(indices)):
-        roll = roll + dice[hand[index]]
-    if
-
+        roll = roll + dice[hand[index]][indices[index]]
+    brains = 0
+    shotguns = 0
+    for die_face in roll:
+        if die_face == 'B':
+            brains += 1
+        elif die_face == 'S':
+            shotguns += 1
+            if shotguns + n_shotgun>=3:
+                return -1
+    return brains
 def outcomes(possibile_hands, n_shotgun):
     '''
     Lists the possible outcomes of rolling, by bin
     '''
     scores = [0]*(2+len(possibile_hands[0])) # a roll could score from 0 to len(hand) (usually 3), or bust
                                              # scores are stored in their indices. Bust is the highest index.
-    for hand in possibile_hands:
+    for hand in possibile_hands: # For each possible hand
         finished = False
-        index = [0]*len(hand)
-        while not finished:
-            for index in indices:
-                result = score_roll(hand, indices,n_shotgun)
-                if result == -1:
-                    scores[len(scores)-1]+=1
-                else:
-                    scores[result]+=1
+        indices = [0]*len(hand)
+        while not finished: # cycle through all possible rolls
+            result = score_roll(hand, indices,n_shotgun)
+            if result == -1:
+                scores[len(scores)-1]+=1
+            else:
+                scores[result]+=1
             finished = increment(indices, 6)
+    return scores
 
 
 def hands(hand, cup):
